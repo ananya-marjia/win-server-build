@@ -1,1 +1,23 @@
 ---
+- name: Provision windows VM from Azure Marketplace
+  hosts: localhost
+  connection: local
+  collections:
+    - azure.azcollection
+
+  vars:
+    resource_group: ""
+    location: ""
+    vm_name: ""
+    vm_size: ""
+    admin_username: ""
+    admin_password: ""
+
+  tasks:
+    - name: Create resource group
+      azure_rm_resourcegroup:
+        name: "{{ resource_group }}"
+        location: "{{ location }}"
+
+    - name:     
+  
