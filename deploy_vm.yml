@@ -1,23 +1,68 @@
 ---
-- name: Provision windows VM from Azure Marketplace
+- name: Provision Windows VM from Azure Marketplace
   hosts: localhost
   connection: local
   collections:
     - azure.azcollection
 
-  vars:
-    resource_group: ""
-    location: ""
-    vm_name: ""
-    vm_size: ""
-    admin_username: ""
-    admin_password: ""
-
   tasks:
+
     - name: Create resource group
       azure_rm_resourcegroup:
         name: "{{ resource_group }}"
         location: "{{ location }}"
 
-    - name:     
+    - name: Create virtual network
+      azure_rm_virtualnetwork:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vnet_name }}"
+        address_prefixes: "10.0.0.0/16"
+        dns_servers:
+          - "8.8.8.8"
+        location: "{{ location }}"
+
+    - name: Create subnet
+      azure_rm_subnet:
+        resource_group: "{{ resource_group }}"
+        name: "{{ subnet }}"
+        address_prefix: "10.0.1.0/24"
+        virtual_network: "{{ vnet_name }}"
+
+    - name: Create public IP
+      azure_rm_publicipaddress:
+        resource_group: "{{ resource_group }}"
+        allocation_method: "Dynamic"
+        name: "{{ pip_name }}"
+        location: "{{ location }}"
+
+    - name: Create network interface
+      azure_rm_networkinterface:
+        resource_group: "{{ resource_group }}"
+        name: "{{ nic }}"
+        location: "{{ location }}"
+        subnet_name: "{{ subnet }}"
+        virtual_network_name: "{{ vnet_name }}"
+        public_ip_name: "{{ pip_name }}"
+
+    - name: Create Windows VM
+      azure_rm_virtualmachine:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}"
+        vm_size: "{{ vm_size }}"
+        admin_username: "{{ admin_username }}"
+        admin_password: "{{ admin_password }}"
+        network_interfaces: "{{ nic }}"
+        image:
+          offer: "WindowsServer"
+          publisher: "MicrosoftWindowsServer"
+          sku: "2019-Datacenter"
+          version: "latest"
+        location: "{{ location }}"
+        os_type: "Windows"
+        storage_account_type: "Standard_LRS"
+        managed_disk_type: "Standard_LRS"
+        winrm:
+          protocol: http
+          port: 5985
+
   
