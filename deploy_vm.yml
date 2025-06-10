@@ -5,6 +5,10 @@
   collections:
     - azure.azcollection
 
+# vars:
+#     windows_version: "{{ windows_version }}"
+#     windows_sku: "{{ '2019-Datacenter' if windows_version == '2019' else '2022-datacenter-azure-edition-hotpatch' }}"    
+
   tasks:
 
     - name: Create resource group
@@ -12,55 +16,61 @@
         name: "{{ resource_group }}"
         location: "{{ location }}"
 
-    - name: Create virtual network
+    - name: Create virtual network and subnet
       azure_rm_virtualnetwork:
         resource_group: "{{ resource_group }}"
         name: "{{ vnet_name }}"
         address_prefixes: "10.0.0.0/16"
-        dns_servers:
-          - "8.8.8.8"
         location: "{{ location }}"
+        subnets:
+          - name: "default"
+            address_prefix: "10.0.1.0/24"        
 
-    - name: Create subnet
-      azure_rm_subnet:
-        resource_group: "{{ resource_group }}"
-        name: "{{ subnet }}"
-        address_prefix: "10.0.1.0/24"
-        virtual_network: "{{ vnet_name }}"
+    # - name: Create subnet
+    #   azure_rm_subnet:
+    #     resource_group: "{{ resource_group }}"
+    #     name: "{{ subnet }}"
+    #     address_prefix: "10.0.1.0/24"
+    #     virtual_network: "{{ vnet_name }}"
 
-    - name: Create public IP
-      azure_rm_publicipaddress:
-        resource_group: "{{ resource_group }}"
-        allocation_method: "Dynamic"
-        name: "{{ pip_name }}"
-        location: "{{ location }}"
+    # - name: Create public IP
+    #   azure_rm_publicipaddress:
+    #     resource_group: "{{ resource_group }}"
+    #     allocation_method: "Dynamic"
+    #     name: "{{ pip_name }}"
+    #     location: "{{ location }}"
 
-    - name: Create network interface
-      azure_rm_networkinterface:
-        resource_group: "{{ resource_group }}"
-        name: "{{ nic }}"
-        location: "{{ location }}"
-        subnet_name: "{{ subnet }}"
-        virtual_network_name: "{{ vnet_name }}"
-        public_ip_name: "{{ pip_name }}"
+    # - name: Create network interface
+    #   azure_rm_networkinterface:
+    #     resource_group: "{{ resource_group }}"
+    #     name: "{{ nic }}"
+    #     location: "{{ location }}"
+    #     subnet_name: "{{ subnet }}"
+    #     virtual_network_name: "{{ vnet_name }}"
+    #     public_ip_name: "{{ pip_name }}"
 
-    - name: Create Windows VM
+    - name: Provision Windows VM with default NIC and public IP
       azure_rm_virtualmachine:
         resource_group: "{{ resource_group }}"
         name: "{{ vm_name }}"
         vm_size: "{{ vm_size }}"
         admin_username: "{{ admin_username }}"
         admin_password: "{{ admin_password }}"
-        network_interfaces: "{{ nic }}"
+        # network_interfaces: "{{ nic }}"
         image:
           offer: "WindowsServer"
           publisher: "MicrosoftWindowsServer"
-          sku: "2019-Datacenter"
+          # sku: "2019-Datacenter"
+          sku: "{{ windows_sku }}"
           version: "latest"
         location: "{{ location }}"
         os_type: "Windows"
-        storage_account_type: "Standard_LRS"
+        # storage_account_type: "Standard_LRS"
         managed_disk_type: "Standard_LRS"
+        virtual_network_name: "{{ vnet_name }}"
+        subnet_name: "default"
+        public_ip_allocation_method: "Dynamic" 
+        assign_public_ip: true                         
         winrm:
           protocol: http
           port: 5985
