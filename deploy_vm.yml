@@ -2,10 +2,11 @@
 - name: Provision Windows VM from Azure Marketplace
   hosts: localhost
   connection: local
+  gather_facts: no
   collections:
     - azure.azcollection
 
-vars:
+  vars:
     resource_group: "RG_INFRA"
     location: "Canada Central"
     vnet_name: "RG_NETWORK"
