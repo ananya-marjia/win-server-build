@@ -6,11 +6,13 @@
     - azure.azcollection
 
 vars:
-    windows_version: "{{ windows_version }}"
+    resource_group: "RG_INFRA"
+    location: "Canada Central"
+    vnet_name: "RG_NETWORK"
+    windows_version: "Windows 2019" 
     windows_sku: "{{ '2019-Datacenter' if windows_version == 'Windows 2019' else '2022-datacenter-azure-edition-hotpatch' }}"    
 
   tasks:
-
     - name: Create resource group
       azure_rm_resourcegroup:
         name: "{{ resource_group }}"
