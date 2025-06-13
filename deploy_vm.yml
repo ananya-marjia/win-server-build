@@ -73,12 +73,15 @@
         os_type: "Windows"
         # storage_account_type: "Standard_LRS"
         managed_disk_type: "Standard_LRS"
+        windows_config:
+          provision_vm_agent: true
+          enable_automatic_updates: true
         # virtual_network_name: "{{ vnet_name }}"
         # subnet_name: "default"
         # public_ip_allocation_method: "Dynamic" 
         # assign_public_ip: true                         
-        winrm:
-          - protocol: http
-            port: 5985
+        # winrm:
+        #   - protocol: http
+        #     port: 5985
 
   
