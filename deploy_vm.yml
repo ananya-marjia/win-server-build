@@ -25,17 +25,14 @@
         resource_group: "{{ resource_group }}"
         name: "{{ vnet_name }}"
         address_prefixes: "10.0.0.0/16"
-        location: "{{ location }}"
-        subnets:
-          - name: "default"
-            address_prefix: "10.0.1.0/24"        
+        location: "{{ location }}"      
 
-    # - name: Create subnet
-    #   azure_rm_subnet:
-    #     resource_group: "{{ resource_group }}"
-    #     name: "{{ subnet }}"
-    #     address_prefix: "10.0.1.0/24"
-    #     virtual_network: "{{ vnet_name }}"
+    - name: Create subnet
+      azure_rm_subnet:
+        resource_group: "{{ resource_group }}"
+        name: "default"
+        address_prefix: "10.0.1.0/24"
+        virtual_network: "{{ vnet_name }}"
 
     # - name: Create public IP
     #   azure_rm_publicipaddress:
