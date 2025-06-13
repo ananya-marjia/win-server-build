@@ -73,7 +73,7 @@
         public_ip_allocation_method: "Dynamic" 
         assign_public_ip: true                         
         winrm:
-          protocol: http
-          port: 5985
+          - protocol: http
+            port: 5985
 
   
