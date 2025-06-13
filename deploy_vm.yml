@@ -50,7 +50,9 @@
         location: "{{ location }}"
         subnet_name: "default"
         virtual_network_name: "{{ vnet_name }}"
-        public_ip_name: "{{ pip_name }}"
+        ip_configurations:
+          - name: "ipconfig1"
+            public_ip_address_name: "{{ pip_name }}"
 
     - name: Provision Windows VM with default NIC and public IP
       azure_rm_virtualmachine:
