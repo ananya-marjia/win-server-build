@@ -11,6 +11,8 @@
     location: "Canada Central"
     vnet_name: "RG_NETWORK"
     windows_version: "Windows 2019" 
+    nic_name: "my-nic"
+    pip_name: "my-pip"
     windows_sku: "{{ '2019-Datacenter' if windows_version == 'Windows 2019' else '2022-datacenter-azure-edition-hotpatch' }}"    
 
   tasks:
@@ -34,21 +36,21 @@
         address_prefix: "10.0.1.0/24"
         virtual_network: "{{ vnet_name }}"
 
-    # - name: Create public IP
-    #   azure_rm_publicipaddress:
-    #     resource_group: "{{ resource_group }}"
-    #     allocation_method: "Dynamic"
-    #     name: "{{ pip_name }}"
-    #     location: "{{ location }}"
+    - name: Create public IP
+      azure_rm_publicipaddress:
+        resource_group: "{{ resource_group }}"
+        allocation_method: "Dynamic"
+        name: "{{ pip_name }}"
+        location: "{{ location }}"
 
-    # - name: Create network interface
-    #   azure_rm_networkinterface:
-    #     resource_group: "{{ resource_group }}"
-    #     name: "{{ nic }}"
-    #     location: "{{ location }}"
-    #     subnet_name: "{{ subnet }}"
-    #     virtual_network_name: "{{ vnet_name }}"
-    #     public_ip_name: "{{ pip_name }}"
+    - name: Create network interface
+      azure_rm_networkinterface:
+        resource_group: "{{ resource_group }}"
+        name: "{{ nic_name }}"
+        location: "{{ location }}"
+        subnet_name: "default"
+        virtual_network_name: "{{ vnet_name }}"
+        public_ip_name: "{{ pip_name }}"
 
     - name: Provision Windows VM with default NIC and public IP
       azure_rm_virtualmachine:
@@ -57,7 +59,8 @@
         vm_size: "{{ vm_size }}"
         admin_username: "windows_admin"
         admin_password: "Anapdi-04"
-        # network_interfaces: "{{ nic }}"
+        network_interface_names: 
+          - "{{ nic_name }}"
         image:
           offer: "WindowsServer"
           publisher: "MicrosoftWindowsServer"
@@ -68,10 +71,10 @@
         os_type: "Windows"
         # storage_account_type: "Standard_LRS"
         managed_disk_type: "Standard_LRS"
-        virtual_network_name: "{{ vnet_name }}"
-        subnet_name: "default"
-        public_ip_allocation_method: "Dynamic" 
-        assign_public_ip: true                         
+        # virtual_network_name: "{{ vnet_name }}"
+        # subnet_name: "default"
+        # public_ip_allocation_method: "Dynamic" 
+        # assign_public_ip: true                         
         winrm:
           - protocol: http
             port: 5985
