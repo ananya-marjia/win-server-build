@@ -18,6 +18,7 @@
       azure_rm_resourcegroup:
         name: "{{ resource_group }}"
         location: "{{ location }}"
+        state: present
 
     - name: Create virtual network and subnet
       azure_rm_virtualnetwork:
