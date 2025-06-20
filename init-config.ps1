@@ -1,2 +1,2 @@
-$flagFile = "$env:windir\Temp\CloudInitFlag.txt"
-"Cloud-init ran" | Out-File -FilePath $flagFile -Force
+$path = "$env:ProgramData\CloudInitFlag.txt"
+'Cloud-init executed' | Out-File -FilePath $path -Force
