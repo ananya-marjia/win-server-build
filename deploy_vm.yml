@@ -1,5 +1,5 @@
 ---
-- name: Provision Windows VM from Azure Marketplace
+- name: Provision Windows VM from Azure Compute Gallery
   hosts: localhost
   connection: local
   gather_facts: no
@@ -7,40 +7,46 @@
     - azure.azcollection
 
   vars:
-    resource_group: "RG_INFRA"
-    location: "Canada Central"
-    vnet_name: "RG_NETWORK"
-    windows_version: "Windows 2019" 
-    nic_name: "my-nic"
-    pip_name: "my-pip"
-    windows_sku: "{{ '2019-Datacenter' if windows_version == 'Windows 2019' else '2022-datacenter-azure-edition-hotpatch' }}"    
+    resource_group: "winImageBuildRG"
+    location: "eastus"
+    vnet_name: "WinVMTemplateVNET"
+#    vm_name: winvm-from-gallery
+    vm_size: Standard B2s
+    admin_username: azureuser
+    admin_password: "StrongPassword123!"  # Should be vaulted
+    subnet_name: WinVMTemplateSubnet
+    nic_name: winvm-nic
+    public_ip_name: winvm-pip
+    image_gallery: Ana_Gallery
+    image_definition: Win2022Datacenter
+    image_version: 1.0.0        
 
   tasks:
-    - name: Create resource group
-      azure_rm_resourcegroup:
-        name: "{{ resource_group }}"
-        location: "{{ location }}"
-        state: present
+    # - name: Create resource group
+    #   azure_rm_resourcegroup:
+    #     name: "{{ resource_group }}"
+    #     location: "{{ location }}"
+    #     state: present
 
-    - name: Create virtual network and subnet
-      azure_rm_virtualnetwork:
-        resource_group: "{{ resource_group }}"
-        name: "{{ vnet_name }}"
-        address_prefixes: "10.0.0.0/16"
-        location: "{{ location }}"      
+    # - name: Create virtual network
+    #   azure_rm_virtualnetwork:
+    #     resource_group: "{{ resource_group }}"
+    #     name: "{{ vnet_name }}"
+    #     address_prefixes: "10.0.0.0/16"
+    #     location: "{{ location }}"      
 
-    - name: Create subnet
-      azure_rm_subnet:
-        resource_group: "{{ resource_group }}"
-        name: "default"
-        address_prefix: "10.0.1.0/24"
-        virtual_network: "{{ vnet_name }}"
+    # - name: Create subnet
+    #   azure_rm_subnet:
+    #     resource_group: "{{ resource_group }}"
+    #     name: "{{ subnet_name }}"
+    #     address_prefix: "10.0.1.0/24"
+    #     virtual_network: "{{ vnet_name }}"
 
     - name: Create public IP
       azure_rm_publicipaddress:
         resource_group: "{{ resource_group }}"
-        allocation_method: "Dynamic"
-        name: "{{ pip_name }}"
+        allocation_method: Static
+        name: "{{ public_ip_name }}"
         location: "{{ location }}"
 
     - name: Create network interface
@@ -48,40 +54,27 @@
         resource_group: "{{ resource_group }}"
         name: "{{ nic_name }}"
         location: "{{ location }}"
-        subnet_name: "default"
+        subnet: "{{ subnet_name }}
         virtual_network_name: "{{ vnet_name }}"
         ip_configurations:
           - name: "ipconfig1"
-            public_ip_address_name: "{{ pip_name }}"
+            public_ip_address_name: "{{ public_ip_name }}"
 
-    - name: Provision Windows VM with default NIC and public IP
+    - name: Provision Windows VM
       azure_rm_virtualmachine:
-        resource_group: "{{ resource_group }}"
         name: "{{ vm_name }}"
-        vm_size: "{{ vm_size }}"
-        admin_username: "windows_admin"
-        admin_password: "Anapdi-04"
-        network_interface_names: 
-          - "{{ nic_name }}"
-        image:
-          offer: "WindowsServer"
-          publisher: "MicrosoftWindowsServer"
-          # sku: "2019-Datacenter"
-          sku: "{{ windows_sku }}"
-          version: "latest"
+        resource_group: "{{ resource_group }}"
         location: "{{ location }}"
-        os_type: "Windows"
-        # storage_account_type: "Standard_LRS"
-        managed_disk_type: "Standard_LRS"
-        windows_config:
-          provision_vm_agent: true
-          enable_automatic_updates: true
-        # virtual_network_name: "{{ vnet_name }}"
-        # subnet_name: "default"
-        # public_ip_allocation_method: "Dynamic" 
-        # assign_public_ip: true                         
-        # winrm:
-        #   - protocol: http
-        #     port: 5985
+        vm_size: "{{ vm_size }}"
+        admin_username: "{{ admin_username }}"
+        admin_password: "{{ admin_password }}"
+        network_interfaces: "{{ nic_name }}"
+        os_type: Windows
+        image:
+          gallery_name: "{{ image_gallery }}"
+          name: "{{ image_definition }}"
+          version: "{{ image_version }}"
+        managed_disk_type: Standard_LRS
+        state: present
 
   
