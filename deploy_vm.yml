@@ -77,10 +77,11 @@
           # publisher: MicrosoftWindowsServer        
           id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery/images/Win2022Datacenter/versions/1.0.0"
         managed_disk_type: Standard_LRS
-        security_type: TrustedLaunch
-        uefi_settings:
-          secure_boot_enabled: true
-          v_tpm_enabled: true
+        security_profile:
+          security_type: TrustedLaunch
+          uefi_settings:
+            secure_boot_enabled: true
+            v_tpm_enabled: true
         state: present
 
   
