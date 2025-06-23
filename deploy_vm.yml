@@ -11,7 +11,7 @@
     location: "eastus"
     vnet_name: "WinVMTemplateVNET"
 #    vm_name: winvm-from-gallery
-    vm_size: Standard B2s
+    vm_size: Standard_B1s
     admin_username: azureuser
     admin_password: "StrongPassword123!"  # Should be vaulted
     subnet_name: WinVMTemplateSubnet
