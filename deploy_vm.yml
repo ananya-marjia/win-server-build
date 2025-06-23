@@ -72,9 +72,9 @@
         os_type: Windows
         image:
           version: "{{ image_version }}"
-          offer: Win2022Datacenter
-          sku: Win2022Datacenter
-          publisher: Ana_Gallery        
+          offer: WindowsServer
+          sku: 2022-datacenter-g2
+          publisher: MicrosoftWindowsServer        
           shared_gallery_image_id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery/images/Win2022Datacenter/versions/1.0.0"
         managed_disk_type: Standard_LRS
         state: present
