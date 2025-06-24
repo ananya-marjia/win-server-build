@@ -5,6 +5,8 @@
   gather_facts: no
   collections:
     - azure.azcollection
+  vars_files:
+    - vault.yml    
 
   vars:
     resource_group: "winImageBuildRG"
@@ -13,13 +15,13 @@
 #    vm_name: winvm-from-gallery
     vm_size: Standard_B1s
     admin_username: azureuser
-    admin_password: "StrongPassword123!"  # Should be vaulted
+    admin_password: "{{ admin_password }}"
     subnet_name: WinVMTemplateSubnet
     nic_name: winvm-nic
     public_ip_name: winvm-pip
     image_gallery: Ana_Gallery
     image_definition: Win2022Datacenter
-    image_version: 1.0.0        
+    image_version: 1.0.0   
 
   tasks:
     # - name: Create resource group
@@ -76,6 +78,7 @@
           # sku: 2022-datacenter-g2
           # publisher: MicrosoftWindowsServer        
           id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery/images/Win2022Datacenter/versions/1.0.0"
+        custom_data: "{{ lookup('file', 'enable_winrm.ps1') | b64encode }}"
         managed_disk_type: Standard_LRS
         security_profile:
           security_type: TrustedLaunch
