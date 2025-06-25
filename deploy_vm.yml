@@ -55,7 +55,7 @@
 
     - name: Generate numeric suffix for NIC
       set_fact:
-        nic_index: "{{ 1000 | random(9999) }}"
+        nic_index: "{{ 9999 | random(start=1000) }}"
         nic_name: "nic-{{ nic_index }}"     
 
     - name: Provision Windows VM
