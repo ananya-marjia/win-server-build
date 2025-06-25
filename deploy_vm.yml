@@ -54,9 +54,13 @@
         var: gallery_version_info.versions   
 
     - name: Generate numeric suffix for NIC
-      set_fact:
+      ansible.builtin.set_fact:
         nic_index: "{{ 9999 | random(start=1000) }}"
         nic_name: "nic-{{ nic_index }}"
+
+    - name: Debug NIC name
+      ansible.builtin.debug:
+        msg: "Generated NIC name: {{ nic_name }}"        
 
     - name: Provision Windows VM
       azure_rm_virtualmachine:
