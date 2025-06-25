@@ -5,6 +5,7 @@
   gather_facts: no
   collections:
     - azure.azcollection
+    - community.general
   vars_files:
     - vault.yml    
 
@@ -53,14 +54,20 @@
     - debug:
         var: gallery_version_info.versions   
 
-    - name: Generate numeric suffix for NIC
+    - name: Generate random NIC name (8 chars lowercase+digits)
       set_fact:
-        nic_index: "{{ 10000 | random(start=1000) }}"
-        nic_name: "nic-{{ nic_index }}"
+        nic_name: "nic-{{ lookup('community.general.random_string', length=8, lower=True, numbers=True) }}"
 
-    - name: Debug NIC name
-      debug:
-        msg: "Generated NIC name: {{ nic_name }}"        
+    - debug:
+        msg: "Using NIC name: {{ nic_name }}"    
+
+    - name: Create network interface
+      azure_rm_networkinterface:
+        resource_group: "{{ resource_group }}"
+        name: "{{ nic_name }}"
+        location: "{{ location }}"
+        subnet: "{{ subnet_name }}"
+        virtual_network_name: "{{ vnet_name }}"        
 
     - name: Provision Windows VM
       azure_rm_virtualmachine:
@@ -70,8 +77,8 @@
         vm_size: "{{ vm_size }}"
         admin_username: "{{ admin_username }}"
         admin_password: "{{ admin_password }}"
-        virtual_network_name: "{{ vnet_name }}"
-        subnet: "{{ subnet_name }}"
+        # virtual_network_name: "{{ vnet_name }}"
+        # subnet: "{{ subnet_name }}"
         network_interfaces: "{{ nic_name }}"
         os_type: Windows
         image:        
