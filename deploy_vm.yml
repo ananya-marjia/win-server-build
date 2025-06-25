@@ -53,10 +53,10 @@
     - debug:
         var: gallery_version_info.versions   
 
-   - name: Generate numeric suffix for NIC
-     set_fact:
-       nic_index: "{{ 1000 | random(9999) }}"
-       nic_name: "nic-{{ nic_index }}"     
+    - name: Generate numeric suffix for NIC
+      set_fact:
+        nic_index: "{{ 1000 | random(9999) }}"
+        nic_name: "nic-{{ nic_index }}"     
 
     - name: Provision Windows VM
       azure_rm_virtualmachine:
