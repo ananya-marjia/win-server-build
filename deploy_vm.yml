@@ -9,41 +9,21 @@
     - vault.yml    
 
   vars:
-    resource_group: "winImageBuildRG"
+    resource_group: "RG_INFRA"
     location: "eastus"
-    vnet_name: "WinVMTemplateVNET"
+    vnet_name: "VNET_GENERIC"
 #    vm_name: winvm-from-gallery
     vm_size: Standard_B1s
     admin_username: azureuser
     admin_password: "{{ admin_password }}"
-    subnet_name: WinVMTemplateSubnet
-    nic_name: winvm-nic
-    public_ip_name: winvm-pip
-    image_gallery: Ana_Gallery
-    image_definition: Win2022Datacenter
+    subnet_name: SUBNET_APP
+#    nic_name: winvm-nic
+#    public_ip_name: winvm-pip
+    image_gallery: Ana_Gallery2
+    image_definition: Win2022G2
     image_version: 1.0.0   
 
   tasks:
-    # - name: Create resource group
-    #   azure_rm_resourcegroup:
-    #     name: "{{ resource_group }}"
-    #     location: "{{ location }}"
-    #     state: present
-
-    # - name: Create virtual network
-    #   azure_rm_virtualnetwork:
-    #     resource_group: "{{ resource_group }}"
-    #     name: "{{ vnet_name }}"
-    #     address_prefixes: "10.0.0.0/16"
-    #     location: "{{ location }}"      
-
-    # - name: Create subnet
-    #   azure_rm_subnet:
-    #     resource_group: "{{ resource_group }}"
-    #     name: "{{ subnet_name }}"
-    #     address_prefix: "10.0.1.0/24"
-    #     virtual_network: "{{ vnet_name }}"
-
     - name: Create public IP
       azure_rm_publicipaddress:
         resource_group: "{{ resource_group }}"
@@ -62,6 +42,14 @@
           - name: "ipconfig1"
             public_ip_address_name: "{{ public_ip_name }}"
 
+    - name: Get custom image info
+      azure.azcollection.azure_rm_image_info:
+        resource_group: "{{ resource_group }}"
+        register: custom_img
+
+    - debug:
+        var: custom_img.images            
+
     - name: Provision Windows VM
       azure_rm_virtualmachine:
         name: "{{ vm_name }}"
@@ -72,12 +60,9 @@
         admin_password: "{{ admin_password }}"
         network_interfaces: "{{ nic_name }}"
         os_type: Windows
-        image:
-          # version: "{{ image_version }}"
-          # offer: WindowsServer
-          # sku: 2022-datacenter-g2
-          # publisher: MicrosoftWindowsServer        
-          id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery/images/Win2022Datacenter/versions/1.0.0"
+        image:        
+          # id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery/images/Win2022Datacenter/versions/1.0.0"
+          id: "{{ custom_img }}"
         custom_data: "{{ lookup('file', 'enable_winrm.ps1') | b64encode }}"
         managed_disk_type: Standard_LRS
         security_profile:
