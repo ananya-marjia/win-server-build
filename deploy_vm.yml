@@ -24,31 +24,39 @@
     image_version: 1.0.0   
 
   tasks:
-    - name: Create public IP
-      azure_rm_publicipaddress:
-        resource_group: "{{ resource_group }}"
-        allocation_method: Static
-        name: "{{ public_ip_name }}"
-        location: "{{ location }}"
+    # - name: Create public IP
+    #   azure_rm_publicipaddress:
+    #     resource_group: "{{ resource_group }}"
+    #     allocation_method: Static
+    #     name: "{{ public_ip_name }}"
+    #     location: "{{ location }}"
 
-    - name: Create network interface
-      azure_rm_networkinterface:
-        resource_group: "{{ resource_group }}"
-        name: "{{ nic_name }}"
-        location: "{{ location }}"
-        subnet: "{{ subnet_name }}"
-        virtual_network_name: "{{ vnet_name }}"
-        ip_configurations:
-          - name: "ipconfig1"
-            public_ip_address_name: "{{ public_ip_name }}"
+    # - name: Create network interface
+    #   azure_rm_networkinterface:
+    #     resource_group: "{{ resource_group }}"
+    #     name: "{{ nic_name }}"
+    #     location: "{{ location }}"
+    #     subnet: "{{ subnet_name }}"
+    #     virtual_network_name: "{{ vnet_name }}"
+        # ip_configurations:
+        #   - name: "ipconfig1"
+        #     public_ip_address_name: "{{ public_ip_name }}"
 
-    - name: Get custom image info
-      azure.azcollection.azure_rm_image_info:
+    - name: Get Shared Image Gallery version info
+      azure.azcollection.azure_rm_galleryimageversion_info:
         resource_group: "{{ resource_group }}"
-        register: custom_img
+        gallery_name: "{{ image_gallery }}"
+        gallery_image_name: "{{ image_definition }}"
+        name: "{{ image_version }}"
+      register: gallery_version_info
 
     - debug:
-        var: custom_img.images            
+        var: gallery_version_info.versions   
+
+   - name: Generate numeric suffix for NIC
+     set_fact:
+       nic_index: "{{ 1000 | random(9999) }}"
+       nic_name: "nic-{{ nic_index }}"     
 
     - name: Provision Windows VM
       azure_rm_virtualmachine:
@@ -58,11 +66,13 @@
         vm_size: "{{ vm_size }}"
         admin_username: "{{ admin_username }}"
         admin_password: "{{ admin_password }}"
+        virtual_network_name: "{{ vnet_name }}"
+        subnet: "{{ subnet_name }}"
         network_interfaces: "{{ nic_name }}"
         os_type: Windows
         image:        
           # id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery/images/Win2022Datacenter/versions/1.0.0"
-          id: "{{ custom_img }}"
+          id: "{{ gallery_version_info.versions[0].id }}"
         custom_data: "{{ lookup('file', 'enable_winrm.ps1') | b64encode }}"
         managed_disk_type: Standard_LRS
         security_profile:
@@ -71,5 +81,3 @@
             secure_boot_enabled: true
             v_tpm_enabled: true
         state: present
-
-  
