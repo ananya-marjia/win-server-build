@@ -24,24 +24,6 @@
     image_version: 1.0.0   
 
   tasks:
-    # - name: Create public IP
-    #   azure_rm_publicipaddress:
-    #     resource_group: "{{ resource_group }}"
-    #     allocation_method: Static
-    #     name: "{{ public_ip_name }}"
-    #     location: "{{ location }}"
-
-    # - name: Create network interface
-    #   azure_rm_networkinterface:
-    #     resource_group: "{{ resource_group }}"
-    #     name: "{{ nic_name }}"
-    #     location: "{{ location }}"
-    #     subnet: "{{ subnet_name }}"
-    #     virtual_network_name: "{{ vnet_name }}"
-        # ip_configurations:
-        #   - name: "ipconfig1"
-        #     public_ip_address_name: "{{ public_ip_name }}"
-
     - name: Get Shared Image Gallery version info
       azure.azcollection.azure_rm_galleryimageversion_info:
         resource_group: "{{ resource_group }}"
