@@ -62,7 +62,7 @@
 
     - name: Create network interface
       azure_rm_networkinterface:
-        resource_group: "{{ resource_group }}"
+        resource_group: "RG_NETWORK"
         name: "{{ nic_name }}"
         location: "{{ location }}"
         subnet: "{{ subnet_name }}"
