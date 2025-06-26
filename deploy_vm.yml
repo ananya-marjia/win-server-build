@@ -5,7 +5,6 @@
   gather_facts: no
   collections:
     - azure.azcollection
-    - community.general
   vars_files:
     - vault.yml    
 
@@ -54,9 +53,9 @@
     - debug:
         var: gallery_version_info.versions   
 
-    - name: Generate random NIC name (8 chars lowercase+digits)
+    - name: Generate NIC name
       set_fact:
-        nic_name: "nic-{{ lookup('community.general.random_string', length=8, lower=True, numbers=True) }}"
+        nic_name: "{{ vm_name }}_nic"
 
     - debug:
         msg: "Using NIC name: {{ nic_name }}"    
