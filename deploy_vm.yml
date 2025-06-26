@@ -52,10 +52,10 @@
         ip_configurations:
           - name: ipconfig1
         subnet:
-          id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1"
+          id: "{{ "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1"
               "/resourceGroups/{{ RG_NETWORK }}"
               "/providers/Microsoft.Network/virtualNetworks/{{ vnet_name }}"
-              "/subnets/{{ subnet_name }}"        
+              "/subnets/{{ subnet_name }}" }}"
         #  id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/RG_NETWORK/providers/Microsoft.Network/virtualNetworks/VNET_GENERIC/subnets/SUBNET_APP"        
 
     - name: Provision Windows VM
