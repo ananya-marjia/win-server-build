@@ -47,8 +47,12 @@
         resource_group: "RG_NETWORK"
         name: "{{ nic_name }}"
         location: "{{ location }}"
-        subnet: "{{ subnet_name }}"
-        virtual_network_name: "{{ vnet_name }}"        
+        #subnet: "{{ subnet_name }}"
+        virtual_network_name: "{{ vnet_name }}"   
+        ip_configurations:
+          - name: ipconfig1
+        subnet:
+          id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/RG_NETWORK/providers/Microsoft.Network/virtualNetworks/VNET_GENERIC/subnets/SUBNET_APP"        
 
     - name: Provision Windows VM
       azure_rm_virtualmachine:
