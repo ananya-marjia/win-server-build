@@ -24,16 +24,16 @@
     image_version: 1.0.0   
 
   tasks:
-    - name: Get Shared Image Gallery version info
-      azure.azcollection.azure_rm_galleryimageversion_info:
-        resource_group: "{{ resource_group }}"
-        gallery_name: "{{ image_gallery }}"
-        gallery_image_name: "{{ image_definition }}"
-        name: "{{ image_version }}"
-      register: gallery_version_info
+    # - name: Get Shared Image Gallery version info
+    #   azure.azcollection.azure_rm_galleryimageversion_info:
+    #     resource_group: "{{ resource_group }}"
+    #     gallery_name: "{{ image_gallery }}"
+    #     gallery_image_name: "{{ image_definition }}"
+    #     name: "{{ image_version }}"
+    #   register: gallery_version_info
 
-    - debug:
-        var: gallery_version_info.versions   
+    # - debug:
+    #     var: gallery_version_info.versions   
 
     - name: Generate NIC name
       set_fact:
@@ -58,13 +58,7 @@
           name: "NSG_APP"
           resource_group: "RG_NETWORK" 
         ip_configurations:
-          - name: ipconfig1
-        # subnet:
-        #   id: '"/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1"
-        #       "/resourceGroups/{{ RG_NETWORK }}"
-        #       "/providers/Microsoft.Network/virtualNetworks/{{ vnet_name }}"
-        #       "/subnets/{{ subnet_name }}"'
-        #  id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/RG_NETWORK/providers/Microsoft.Network/virtualNetworks/VNET_GENERIC/subnets/SUBNET_APP"        
+          - name: ipconfig1  
 
     - name: Provision Windows VM
       azure_rm_virtualmachine:
@@ -79,8 +73,7 @@
         network_interfaces: "{{ nic_name }}"
         os_type: Windows
         image:        
-          # id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery/images/Win2022Datacenter/versions/1.0.0"
-          id: "{{ gallery_version_info.versions[0].id }}"
+          id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery2/images/Win2022G2/versions/1.0.0"
         custom_data: "{{ lookup('file', 'enable_winrm.ps1') | b64encode }}"
         managed_disk_type: Standard_LRS
         security_profile:
