@@ -70,10 +70,11 @@
         subscription_id: "3d489bb7-7b50-4375-93ca-5e42db0494e1"
         security_group:
           name: "NSG_APP"
-          resource_group: "RG_NETWORK" 
-        public_ip_address_name: "{{ pip_name }}"          
+          resource_group: "RG_NETWORK"         
         ip_configurations:
-          - name: ipconfig1  
+          - name: ipconfig1
+            public_ip_address_name: "{{ pip_name }}"  
+            primary: true
 
     - name: Provision Windows VM
       azure_rm_virtualmachine:
