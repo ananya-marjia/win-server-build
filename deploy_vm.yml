@@ -10,7 +10,7 @@
 
   vars:
     resource_group: "RG_INFRA"
-    location: "eastus"
+    location: "canadacentral"
     vnet_name: "VNET_GENERIC"
 #    vm_name: winvm-from-gallery
     vm_size: Standard_B1s
@@ -47,15 +47,23 @@
         resource_group: "{{ resource_group }}"
         name: "{{ nic_name }}"
         location: "{{ location }}"
-        #subnet: "{{ subnet_name }}"
-#        virtual_network_name: "{{ vnet_name }}"   
+        os_type: "Windows"
+        subnet: "{{ subnet_name }}"
+      #  virtual_network_name: "{{ vnet_name }}"
+        virtual_network:
+          name:  "{{ vnet_name }}"
+          resource_group: "RG_NETWORK"        
+        subscription_id: "3d489bb7-7b50-4375-93ca-5e42db0494e1"
+        security_group:
+          name: "NSG_APP"
+          resource_group: "RG_NETWORK" 
         ip_configurations:
           - name: ipconfig1
-        subnet:
-          id: '"/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1"
-              "/resourceGroups/{{ RG_NETWORK }}"
-              "/providers/Microsoft.Network/virtualNetworks/{{ vnet_name }}"
-              "/subnets/{{ subnet_name }}"'
+        # subnet:
+        #   id: '"/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1"
+        #       "/resourceGroups/{{ RG_NETWORK }}"
+        #       "/providers/Microsoft.Network/virtualNetworks/{{ vnet_name }}"
+        #       "/subnets/{{ subnet_name }}"'
         #  id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/RG_NETWORK/providers/Microsoft.Network/virtualNetworks/VNET_GENERIC/subnets/SUBNET_APP"        
 
     - name: Provision Windows VM
