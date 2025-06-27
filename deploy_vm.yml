@@ -33,7 +33,21 @@
     #   register: gallery_version_info
 
     # - debug:
-    #     var: gallery_version_info.versions   
+    #     var: gallery_version_info.versions 
+    - name: Generate Public ip name
+      set_fact:
+        pip_name: "{{ vm_name }}_pip"
+
+    - debug:
+        msg: "Using PIP name: {{ pip_name }}"         
+    
+    - name: Create a public IP address
+      azure.azcollection.azure_rm_publicipaddress:
+        resource_group: "{{ resource_group }}"
+        name: "{{ pip_name }}"
+        allocation_method: Static
+        location: "{{ location }}"
+        
 
     - name: Generate NIC name
       set_fact:
@@ -57,6 +71,7 @@
         security_group:
           name: "NSG_APP"
           resource_group: "RG_NETWORK" 
+        public_ip_address_name: "{{ pip_name }}"          
         ip_configurations:
           - name: ipconfig1  
 
