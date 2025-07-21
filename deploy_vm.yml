@@ -102,4 +102,57 @@
             state: absent
 
         - fail:
-            msg: "❌ VM deployment failed — cleaned up related resources."            
+            msg: "❌ VM deployment failed — cleaned up related resources."     
+
+        - name: Enable WinRM over 5985 and 5986 with self-signed cert
+          hosts: windows
+          gather_facts: no
+          tasks:
+        
+            - name: Enable WinRM over HTTP (5985)
+              win_shell: |
+                Enable-PSRemoting -Force
+        
+            - name: Check if WinRM HTTPS listener exists
+              win_shell: |
+                $listeners = winrm enumerate winrm/config/listener
+                if ($listeners -match "Transport = HTTPS" -and $listeners -match "Port = 5986") {
+                  Write-Output "Exists"
+                } else {
+                  Write-Output "Missing"
+                }
+              register: https_listener_status
+        
+            - name: Create self-signed cert and listener (if missing)
+              win_shell: |
+                $existingCert = Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object {
+                  $_.Subject -like "*$env:COMPUTERNAME*" -and $_.EnhancedKeyUsageList.ObjectId -contains "1.3.6.1.5.5.7.3.1"
+                } | Select-Object -First 1
+        
+                if (-not $existingCert) {
+                  $existingCert = New-SelfSignedCertificate `
+                    -DnsName $env:COMPUTERNAME `
+                    -CertStoreLocation "cert:\LocalMachine\My" `
+                    -KeyUsage DigitalSignature, KeyEncipherment `
+                    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
+                    -FriendlyName "WinRM Self-Signed Cert"
+                }
+        
+                $thumbprint = $existingCert.Thumbprint
+                $listenerString = "@{Hostname=`"`";CertificateThumbprint=`"$thumbprint`";Port=`"5986`"}"
+                Start-Process -FilePath "winrm.cmd" -ArgumentList "create", "winrm/config/Listener?Address=*+Transport=HTTPS", $listenerString -Wait -NoNewWindow
+              when: "'Missing' in https_listener_status.stdout"
+        
+            - name: Open firewall port 5985 (WinRM HTTP) if not exists
+              win_shell: |
+                if (-not (Get-NetFirewallRule -Name "WinRM_HTTP_5985" -ErrorAction SilentlyContinue)) {
+                  New-NetFirewallRule -DisplayName "WinRM HTTP 5985" -Name "WinRM_HTTP_5985" -Protocol TCP -LocalPort 5985 -Action Allow -Direction Inbound
+                }
+        
+            - name: Open firewall port 5986 (WinRM HTTPS) if not exists
+              win_shell: |
+                if (-not (Get-NetFirewallRule -Name "WinRM_HTTPS_5986" -ErrorAction SilentlyContinue)) {
+                  New-NetFirewallRule -DisplayName "WinRM HTTPS 5986" -Name "WinRM_HTTPS_5986" -Protocol TCP -LocalPort 5986 -Action Allow -Direction Inbound
+                }
+
+                    
