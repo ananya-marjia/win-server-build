@@ -61,20 +61,20 @@
             msg: "Failed to prepare networking resources (PIP or NIC)."                
 
     - block:
-        - name: Check if OS disk already exists
-          azure.azcollection.azure_rm_manageddisk_info:
-            name: "{{ vm_name }}"
-            resource_group: "{{ resource_group }}"
-          register: disk_info
-          ignore_errors: true
+        # - name: Check if OS disk already exists
+        #   azure.azcollection.azure_rm_manageddisk_info:
+        #     name: "{{ vm_name }}"
+        #     resource_group: "{{ resource_group }}"
+        #   register: disk_info
+        #   ignore_errors: true
         
-        - name: Show disk_info content
-          debug:
-            var: disk_info
+        # - name: Show disk_info content
+        #   debug:
+        #     var: disk_info
 
-        - name: Set create_option based on disk existence
-          set_fact:
-            disk_create_option: "{{ 'Attach' if (disk_info.disks is defined and disk_info.disks | length > 0) else 'FromImage' }}"
+        # - name: Set create_option based on disk existence
+        #   set_fact:
+        #     disk_create_option: "{{ 'Attach' if (disk_info.disks is defined and disk_info.disks | length > 0) else 'FromImage' }}"
 
     
         - name: Provision Windows VM
@@ -89,9 +89,9 @@
             os_type: Windows
             image:        
               id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery2/images/Win2022G2/versions/1.0.0"
-            os_disk:
-              name: "{{ vm_name }}"
-              create_option: "{{ disk_create_option }}"
+            # os_disk:
+            #   name: "{{ vm_name }}"
+            #   create_option: "{{ disk_create_option }}"
             custom_data: "{{ lookup('file', 'enable_winrm.ps1') | b64encode }}"
             managed_disk_type: Standard_LRS
             security_profile:
