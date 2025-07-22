@@ -102,6 +102,17 @@
           set_fact:
             winvm_ip: "{{ public_ip_info.publicipaddresses[0].ip_address }}"
 
+        - name: Get VM info
+          azure.azcollection.azure_rm_virtualmachine_info:
+            name: "{{ vm_name }}"
+            resource_group: "{{ resource_group }}"
+          register: vm_info
+        
+        - name: Set OS disk name fact
+          set_fact:
+            disk_name: "{{ vm_info.virtual_machines[0].storage_profile.os_disk.name }}"
+            
+
         - name: Wait for WinRM to become available
           wait_for:
             host: "{{ winvm_ip }}"
