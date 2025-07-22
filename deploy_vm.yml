@@ -128,8 +128,11 @@
         
         - name: Set OS disk name fact
           set_fact:
-            disk_name: "{{ vm_info.virtual_machines[0].storage_profile.os_disk.name }}"
-            
+            os_disk_name: "{{ vm_info.virtual_machines[0].storage_profile.os_disk.name }}"
+          when: 
+            - vm_info.virtual_machines is defined
+            - vm_info.virtual_machines | length > 0
+         
 
         - name: Wait for WinRM to become available
           wait_for:
