@@ -137,6 +137,12 @@
             name: "{{ nic_name }}"
             state: absent
 
+        - name: Remove OS Disk on failure
+          azure.azcollection.azure_rm_manageddisk:
+            resource_group: "{{ resource_group }}"
+            name: "{{ disk_name }}"
+            state: absent
+    
         - name: Remove Public IP on failure
           azure.azcollection.azure_rm_publicipaddress:
             resource_group: "{{ resource_group }}"
