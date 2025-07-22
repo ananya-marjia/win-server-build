@@ -104,8 +104,8 @@
 
         - name: Wait for WinRM to become available
           wait_for:
-            host: "{{ public_ip_info }}"
-            port: 5986
+            host: "{{ winvm_ip }}"
+            port: 5985
             delay: 10
             timeout: 300
             state: started
