@@ -69,12 +69,13 @@
             vm_size: "{{ vm_size }}"
             admin_username: "{{ admin_username }}"
             admin_password: "{{ admin_password }}"
-            # virtual_network_name: "{{ vnet_name }}"
-            # subnet: "{{ subnet_name }}"
             network_interfaces: "{{ nic_name }}"
             os_type: Windows
             image:        
               id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery2/images/Win2022G2/versions/1.0.0"
+            # os_disk:
+            #   name: "{{ vm_name }}"
+            #   create_option: "{{ disk_create_option }}"
             custom_data: "{{ lookup('file', 'enable_winrm.ps1') | b64encode }}"
             managed_disk_type: Standard_LRS
             security_profile:
@@ -83,6 +84,22 @@
                 secure_boot_enabled: true
                 v_tpm_enabled: true
             state: present
+        
+        - name: Enable WinRM on Windows VM using Custom Script Extension
+          azure_rm_virtualmachineextension:
+            resource_group: "{{ resource_group }}"
+            name: enable-winrm-cse
+            virtual_machine_name: "{{ vm_name }}"
+            publisher: Microsoft.Compute
+            virtual_machine_extension_type: CustomScriptExtension
+            type_handler_version: "1.10"
+            settings:
+              fileUris:
+                - https://github.com/ananya-marjia/win-server-build/blob/main/enable_winrm_cs.ps1
+              commandToExecute: "powershell -ExecutionPolicy Unrestricted -File enable_winrm.ps1"
+            auto_upgrade_minor_version: true
+          delegate_to: localhost
+
 
         - name: VM deployment success
           debug:
