@@ -94,9 +94,13 @@
             name: "{{ pip_name }}"
           register: public_ip_info
 
-        # - name: Set Windows VM target IP
-        #   set_fact:
-        #     winvm_ip: "{{ public_ip_info.azure_publicipaddresses[0].ip_address }}"
+        - name: Debug public_ip_info structure
+          debug:
+            var: public_ip_info
+        
+        - name: Set Windows VM target IP
+          set_fact:
+            winvm_ip: "{{ public_ip_info.publicipaddresses[0].ip_address }}"
 
         - name: Wait for WinRM to become available
           wait_for:
@@ -119,6 +123,14 @@
             
 
       rescue:
+        - name: Remove VM on failure
+          azure_rm_virtualmachine:
+            name: "{{ vm_name }}"
+            resource_group: "{{ resource_group }}"
+            state: absent
+            remove_on_absent:
+              - all_resources
+      
         - name: Clean up NIC and PIP on failure
           azure.azcollection.azure_rm_networkinterface:
             resource_group: "{{ resource_group }}"
