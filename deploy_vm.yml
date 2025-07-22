@@ -94,13 +94,13 @@
             name: "{{ pip_name }}"
           register: public_ip_info
 
-        - name: Set Windows VM target IP
-          set_fact:
-            winvm_ip: "{{ public_ip_info.azure_publicipaddresses[0].ip_address }}"
+        # - name: Set Windows VM target IP
+        #   set_fact:
+        #     winvm_ip: "{{ public_ip_info.azure_publicipaddresses[0].ip_address }}"
 
         - name: Wait for WinRM to become available
           wait_for:
-            host: "{{ winvm_ip }}"
+            host: "{{ public_ip_info }}"
             port: 5986
             delay: 10
             timeout: 300
