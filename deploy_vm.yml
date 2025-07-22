@@ -66,11 +66,16 @@
             name: "{{ vm_name }}"
             resource_group: "{{ resource_group }}"
           register: disk_info
-          ignore_errors: yes
+          ignore_errors: true
+        
+        - name: Show disk_info content
+          debug:
+            var: disk_info
 
-        - name: Determine disk create option
+        - name: Set create_option based on disk existence
           set_fact:
-            disk_create_option: "{{ 'Attach' if disk_info.managed_disks | length > 0 else 'FromImage' }}"
+            disk_create_option: "{{ 'Attach' if (disk_info.disks is defined and disk_info.disks | length > 0) else 'FromImage' }}"
+
     
         - name: Provision Windows VM
           azure_rm_virtualmachine:
