@@ -1,0 +1,106 @@
+---
+- name: Provision Windows VM from Azure Compute Gallery
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  collections:
+    - azure.azcollection
+  vars_files:
+    - vault.yml    
+
+  vars:
+    resource_group: "RG_INFRA"
+    location: "canadacentral"
+    vnet_name: "VNET_GENERIC"
+#    vm_name: winvm-from-gallery
+    vm_size: Standard_B1s
+    admin_username: azureuser
+    admin_password: "{{ admin_password }}"
+    subnet_name: SUBNET_APP
+#    nic_name: winvm-nic
+#    public_ip_name: winvm-pip
+    image_gallery: Ana_Gallery2
+    image_definition: Win2022G2
+    image_version: 1.0.0   
+
+  tasks:
+    - block:
+        - name: Generate Public IP and NIC names
+          set_fact:
+            pip_name: "{{ vm_name }}_pip"
+            nic_name: "{{ vm_name }}_nic"       
+    
+        - name: Create a public IP address
+          azure.azcollection.azure_rm_publicipaddress:
+            resource_group: "{{ resource_group }}"
+            name: "{{ pip_name }}"
+            allocation_method: Static
+            location: "{{ location }}" 
+
+        - name: Create NIC referencing cross-RG VNet/subnet & NSG
+          azure_rm_networkinterface:
+            resource_group: "{{ resource_group }}"
+            name: "{{ nic_name }}"
+            location: "{{ location }}"
+            os_type: "Windows"
+            subnet: "{{ subnet_name }}"
+            virtual_network:
+              name:  "{{ vnet_name }}"
+              resource_group: "RG_NETWORK"        
+            subscription_id: "3d489bb7-7b50-4375-93ca-5e42db0494e1"
+            security_group:
+              name: "NSG_APP"
+              resource_group: "RG_NETWORK"         
+            ip_configurations:
+              - name: ipconfig1
+                public_ip_address_name: "{{ pip_name }}"  
+                primary: true
+
+      rescue:
+        - fail:
+            msg: "Failed to prepare networking resources (PIP or NIC)."                
+
+    - block:
+        - name: Provision Windows VM
+          azure_rm_virtualmachine:
+            name: "{{ vm_name }}"
+            resource_group: "{{ resource_group }}"
+            location: "{{ location }}"
+            vm_size: "{{ vm_size }}"
+            admin_username: "{{ admin_username }}"
+            admin_password: "{{ admin_password }}"
+            # virtual_network_name: "{{ vnet_name }}"
+            # subnet: "{{ subnet_name }}"
+            network_interfaces: "{{ nic_name }}"
+            os_type: Windows
+            image:        
+              id: "/subscriptions/3d489bb7-7b50-4375-93ca-5e42db0494e1/resourceGroups/winImageBuildRG/providers/Microsoft.Compute/galleries/Ana_Gallery2/images/Win2022G2/versions/1.0.0"
+            custom_data: "{{ lookup('file', 'enable_winrm.ps1') | b64encode }}"
+            managed_disk_type: Standard_LRS
+            security_profile:
+              security_type: TrustedLaunch
+              uefi_settings:
+                secure_boot_enabled: true
+                v_tpm_enabled: true
+            state: present
+
+        - name: VM deployment success
+          debug:
+            msg: "✅ VM {{ vm_name }} deployed with NIC {{ nic_name }} and PIP {{ pip_name }}"
+            
+
+      rescue:
+        - name: Clean up NIC and PIP on failure
+          azure.azcollection.azure_rm_networkinterface:
+            resource_group: "{{ resource_group }}"
+            name: "{{ nic_name }}"
+            state: absent
+
+        - name: Remove Public IP on failure
+          azure.azcollection.azure_rm_publicipaddress:
+            resource_group: "{{ resource_group }}"
+            name: "{{ pip_name }}"
+            state: absent
+
+        - fail:
+            msg: "❌ VM deployment failed — cleaned up related resources."     
